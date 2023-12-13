@@ -52,7 +52,7 @@ def evaluate(gcn_c: torch.nn.Module,
             predictions = torch.argmax(logits_total, dim=1)[mask].cpu()
             targets = data.y[mask]
             accuracy = accuracy_score(targets, predictions)
-            f1 = f1_score(targets, predictions, average='micro')
+            f1 = f1_score(targets, predictions, average='weighted')
         # multilabel classification
         else:
             y_pred = logits_total[mask] > 0
@@ -160,6 +160,6 @@ def evaluate(gcn_c: torch.nn.Module,
         targets = data.y[mask]
 
         accuracy = accuracy_score(targets, all_predictions)
-        f1 = f1_score(targets, all_predictions, average='micro')
+        f1 = f1_score(targets, all_predictions, average='weighted')
 
     return accuracy, f1

@@ -15,7 +15,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from tqdm import tqdm
 
 from modules.data import get_data, get_ppi
-from modules.gcn import GCN, GCN2
+from modules.gcn import GCN, GCN2, GraphSAGE
 from modules.utils import (TensorMap, get_logger, get_neighborhoods,
                            sample_neighborhoods_from_probs, slice_adjacency)
 
@@ -36,7 +36,7 @@ class Arguments(Tap):
     reg_param: float = 0.
     dropout: float = 0.
 
-    model_type: str = 'gcn'
+    model_type: str = 'graphsage'
     hidden_dim: int = 256
     max_epochs: int = 30
     batch_size: int = 512
@@ -44,15 +44,15 @@ class Arguments(Tap):
     eval_on_cpu: bool = False
     eval_full_batch: bool = False
 
-    runs: int = 10
+    runs: int = 3
     notes: str = None
-    log_wandb: bool = True
+    log_wandb: bool = False
     config_file: str = None
 
 
 def train(args: Arguments):
     wandb.init(project='gflow-sampling',
-               entity='gflow-samp',
+               entity='m770706946',
                mode='online' if args.log_wandb else 'disabled',
                config=args.as_dict(),
                notes=args.notes)
@@ -70,6 +70,8 @@ def train(args: Arguments):
 
     if args.model_type == 'gcn':
         gcn_c = GCN(data.num_features, hidden_dims=[args.hidden_dim, num_classes], dropout=args.dropout).to(device)
+    elif args.model_type == 'graphsage':
+        gcn_c = GraphSAGE(data.num_features, hidden_dims=[args.hidden_dim, num_classes], dropout=args.dropout).to(device)
 
     optimizer_c = Adam(gcn_c.parameters(), lr=args.lr_gc)
 
@@ -117,12 +119,12 @@ def train(args: Arguments):
             val_predictions = torch.argmax(logits, dim=1)[data.val_mask].cpu()
             targets = data.y[data.val_mask]
             accuracy = accuracy_score(targets, val_predictions)
-            f1 = f1_score(targets, val_predictions, average='micro')
+            f1 = f1_score(targets, val_predictions, average='weighted')
 
             log_dict = {'epoch': epoch,
                         'valid_f1': f1}
 
-            logger.info(f'loss_c={acc_loss_c:.6f}, '
+            print(f'loss_c={acc_loss_c:.6f}, '
                         f'valid_f1={f1:.3f}')
             wandb.log(log_dict)
 
@@ -131,14 +133,14 @@ def train(args: Arguments):
     test_predictions = torch.argmax(logits, dim=1)[data.test_mask].cpu()
     targets = data.y[data.test_mask]
     test_accuracy = accuracy_score(targets, test_predictions)
-    test_f1 = f1_score(targets, test_predictions, average='micro')
+    test_f1 = f1_score(targets, test_predictions, average='weighted')
 
     wandb.log({'test_accuracy': test_accuracy,
                'test_f1': test_f1})
-    logger.info(f'test_accuracy={test_accuracy:.3f}, '
+    print(f'test_accuracy={test_accuracy:.3f}, '
                 f'test_f1={test_f1:.3f}')
 
-    return test_f1
+    return test_f1, test_accuracy, f1, accuracy
 
 
 args = Arguments(explicit_bool=True).parse_args()
@@ -149,9 +151,18 @@ if args.config_file is not None:
     args = Arguments(explicit_bool=True, config_files=[args.config_file])
     args = args.parse_args()
 
-results = torch.empty(args.runs, 3)
+results = torch.empty(args.runs)
+results2 = torch.empty(args.runs)
+results3 = torch.empty(args.runs)
+results4 = torch.empty(args.runs)
 for r in range(args.runs):
-    test_f1= train(args)
-    results[r, 0] = test_f1
+    test_f1, test_accuracy, f1, accuracy= train(args)
+    results[r] = test_f1
+    results2[r] = test_accuracy
+    results3[r] = f1
+    results4[r] = accuracy
 
-print(f'Acc: {100 * results[:,0].mean():.2f} ± {100 * results[:,0].std():.2f}')
+print(f'Test f1: {results.mean():.2f} ± {results.std():.2f}')
+print(f'Test Acc: {100 * results2.mean():.2f} ± {100 * results2.std():.2f}')
+print(f'Valid f1: {results3.mean():.2f} ± {results3.std():.2f}')
+print(f'Valid Acc: {100 * results4.mean():.2f} ± {100 * results4.std():.2f}')

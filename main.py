@@ -12,7 +12,7 @@ from tqdm import tqdm
 
 from eval import evaluate
 from modules.data import get_data
-from modules.gcn import GCN
+from modules.gcn import GCN, GraphSAGE
 from modules.utils import (TensorMap, get_logger, get_neighborhoods,
                            sample_neighborhoods_from_probs, slice_adjacency)
 
@@ -21,35 +21,37 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
 class Arguments(Tap):
-    dataset: str = 'cora'
+    dataset: str = 'amazonComputers'
 
     sampling_hops: int = 2
     num_samples: int = 16
     use_indicators: bool = True
     lr_gf: float = 1e-4
     lr_gc: float = 1e-3
-    loss_coef: float = 1e4
     log_z_init: float = 0.
     reg_param: float = 0.
     dropout: float = 0.
 
-    model_type: str = 'gcn'
+    model_type: str = 'graphsage'
     hidden_dim: int = 256
     max_epochs: int = 30
-    batch_size: int = 512
+    batch_size: int = 256
     eval_frequency: int = 5
     eval_on_cpu: bool = True
     eval_full_batch: bool = True
 
-    runs: int = 10
+    runs: int = 3
     notes: str = None
-    log_wandb: bool = True
+    log_wandb: bool = False
     config_file: str = None
+    loss_coef: float = 1e4
+    loss_coef_lr: float = 1
+    sample_prob_threshold: float = 0.
 
 
 def train(args: Arguments):
     wandb.init(project='gflow-sampling',
-               entity='gflow-samp',
+               entity='m770706946',
                mode='online' if args.log_wandb else 'disabled',
                config=args.as_dict(),
                notes=args.notes)
@@ -70,10 +72,21 @@ def train(args: Arguments):
         # GCN model for GFlotNet sampling
         gcn_gf = GCN(data.num_features + num_indicators,
                       hidden_dims=[args.hidden_dim, 1]).to(device)
+    elif args.model_type == 'graphsage':
+        gcn_c = GraphSAGE(data.num_features, hidden_dims=[args.hidden_dim, num_classes], dropout=args.dropout).to(device)
+        # GCN model for GFlotNet sampling
+        gcn_gf = GCN(data.num_features + num_indicators,
+                      hidden_dims=[args.hidden_dim, 1]).to(device)
 
     log_z = torch.tensor(args.log_z_init, requires_grad=True)
+    loss_coef = torch.tensor(args.loss_coef, requires_grad=True)
     optimizer_c = Adam(gcn_c.parameters(), lr=args.lr_gc)
-    optimizer_gf = Adam(list(gcn_gf.parameters()) + [log_z], lr=args.lr_gf)
+
+    param_groups = [
+        {'params': list(gcn_gf.parameters()) + [log_z], 'lr': args.lr_gf},  # Default learning rate for these parameters
+        {'params': [loss_coef], 'lr': args.loss_coef_lr}  # Increased learning rate for loss_coef
+    ]
+    optimizer_gf = Adam(param_groups)
 
     if data.y.dim() == 1:
         loss_fn = nn.CrossEntropyLoss()
@@ -88,7 +101,6 @@ def train(args: Arguments):
 
     test_idx = data.test_mask.nonzero().squeeze(1)
     test_loader = DataLoader(TensorDataset(test_idx), batch_size=args.batch_size)
-
     adjacency = sp.csr_matrix((np.ones(data.num_edges, dtype=bool),
                                data.edge_index),
                               shape=(data.num_nodes, data.num_nodes))
@@ -115,7 +127,6 @@ def train(args: Arguments):
             for batch_id, batch in enumerate(train_loader):
                 torch.cuda.empty_cache()
                 torch.cuda.reset_peak_memory_stats()
-
                 target_nodes = batch[0]
 
                 previous_nodes = target_nodes.clone()
@@ -140,6 +151,7 @@ def train(args: Arguments):
                     batch_nodes_mask.zero_()
                     prev_nodes_mask[previous_nodes] = True
                     batch_nodes_mask[neighborhoods.view(-1)] = True
+                    # exclude previous node from current batch
                     neighbor_nodes_mask = batch_nodes_mask & ~prev_nodes_mask
 
                     batch_nodes = node_map.values[batch_nodes_mask]
@@ -158,20 +170,20 @@ def train(args: Arguments):
                                       ).to(device)
                     else:
                         x = data.x[batch_nodes].to(device)
-
                     # Get probabilities for sampling each node
                     node_logits, _ = gcn_gf(x, local_neighborhoods)
                     # Select logits for neighbor nodes only
                     node_logits = node_logits[node_map.map(neighbor_nodes)]
-
+                    
                     # Sample neighbors using the logits
                     sampled_neighboring_nodes, log_prob, statistics = sample_neighborhoods_from_probs(
                         node_logits,
                         neighbor_nodes,
-                        args.num_samples
+                        args.num_samples,
+                        args.sample_prob_threshold
                     )
-                    all_nodes_mask[sampled_neighboring_nodes] = True
 
+                    all_nodes_mask[sampled_neighboring_nodes] = True
                     log_probs.append(log_prob)
                     sampled_sizes.append(sampled_neighboring_nodes.shape[0])
                     neighborhood_sizes.append(neighborhoods.shape[-1])
@@ -216,7 +228,7 @@ def train(args: Arguments):
                 optimizer_gf.zero_grad()
                 cost_gfn = loss_c.detach()
 
-                loss_gfn = (log_z + torch.sum(torch.cat(log_probs, dim=0)) + args.loss_coef*cost_gfn)**2
+                loss_gfn = (log_z + torch.sum(torch.cat(log_probs, dim=0)) + loss_coef*cost_gfn)**2
 
                 mem_allocations_point1.append(torch.cuda.max_memory_allocated() / (1024 * 1024))
                 mem_allocations_point2.append(gcn_mem_alloc)
@@ -231,7 +243,8 @@ def train(args: Arguments):
                 wandb.log({'batch_loss_gfn': batch_loss_gfn,
                            'batch_loss_c': batch_loss_c,
                            'log_z': log_z,
-                           '-log_probs': -torch.sum(torch.cat(log_probs, dim=0))})
+                           '-log_probs': -torch.sum(torch.cat(log_probs, dim=0))
+                           })
 
                 log_dict = {}
                 for i, statistics in enumerate(all_statistics):
@@ -245,7 +258,8 @@ def train(args: Arguments):
                 bar.set_postfix({'batch_loss_gfn': batch_loss_gfn,
                                  'batch_loss_c': batch_loss_c,
                                  'log_z': log_z.item(),
-                                 'log_probs': torch.sum(torch.cat(log_probs, dim=0)).item()})
+                                 'log_probs': torch.sum(torch.cat(log_probs, dim=0)).item(),
+                           'loss_coef': loss_coef.item()})
                 bar.update()
 
         bar.close()
@@ -277,7 +291,7 @@ def train(args: Arguments):
                         'valid_accuracy': accuracy,
                         'valid_f1': f1}
 
-            logger.info(f'loss_gfn={acc_loss_gfn:.6f}, '
+            print(f'loss_gfn={acc_loss_gfn:.6f}, '
                         f'loss_c={acc_loss_c:.6f}, '
                         f'valid_accuracy={accuracy:.3f}, '
                         f'valid_f1={f1:.3f}')
@@ -297,9 +311,9 @@ def train(args: Arguments):
                                       full_batch=args.eval_full_batch)
     wandb.log({'test_accuracy': test_accuracy,
                'test_f1': test_f1})
-    logger.info(f'test_accuracy={test_accuracy:.3f}, '
+    print(f'test_accuracy={test_accuracy:.3f}, '
                 f'test_f1={test_f1:.3f}')
-    return test_f1, all_mem_allocations_point1, all_mem_allocations_point2, all_mem_allocations_point3
+    return test_accuracy, all_mem_allocations_point1, all_mem_allocations_point2, all_mem_allocations_point3, loss_coef, test_f1, accuracy, f1
 
 
 args = Arguments(explicit_bool=True).parse_args()
@@ -314,15 +328,27 @@ results = torch.empty(args.runs)
 mem1 = []
 mem2 = []
 mem3 = []
+loss_coefs = torch.empty(args.runs)
+test_f1s = torch.empty(args.runs)
+valid_accuracys = torch.empty(args.runs)
+valid_f1s = torch.empty(args.runs)
 for r in range(args.runs):
-    test_f1, mean_mem1, mean_mem2, mean_mem3 = train(args)
-    results[r] = test_f1
+    test_accuracy, mean_mem1, mean_mem2, mean_mem3, loss_coef, test_f1, valid_accuracy, valid_f1 = train(args)
+    results[r] = test_accuracy
     mem1.extend(mean_mem1)
     mem2.extend(mean_mem2)
     mem3.extend(mean_mem3)
+    loss_coefs[r] = loss_coef
+    test_f1s[r] = test_f1
+    valid_accuracys[r] = valid_accuracy
+    valid_f1s[r] = valid_f1
 
 
 print(f'Memory point 1: {np.mean(mem1)} MB ± {np.std(mem1):.2f}')
 print(f'Memory point 2: {np.mean(mem2)} MB ± {np.std(mem2):.2f}')
 print(f'Memory point 2: {np.mean(mem3)} MB ± {np.std(mem3):.2f}')
 print(f'Acc: {100 * results.mean():.2f} ± {100 * results.std():.2f}')
+print(f'Loss Coefficient: {loss_coefs.mean():.2f} ± {loss_coefs.std():.2f}')
+print(f'Test f1: {test_f1s.mean():.2f} ± {test_f1s.std():.2f}')
+print(f'Valid acc: {100 * valid_accuracys.mean():.2f} ± {100 * valid_accuracys.std():.2f}')
+print(f'valid f1: {valid_f1s.mean():.2f} ± {valid_f1s.std():.2f}')

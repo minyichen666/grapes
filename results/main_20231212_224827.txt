@@ -1,0 +1,3 @@
+loss_gfn=333490.868459, loss_c=0.418122, valid_accuracy=0.861, valid_f1=0.858
+loss_gfn=208720.514796, loss_c=0.248874, valid_accuracy=0.894, valid_f1=0.891
+loss_gfn=116012.384785, loss_c=0.161175, valid_accuracy=0.861, valid_f1=0.846

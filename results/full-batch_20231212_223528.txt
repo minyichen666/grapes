@@ -1,0 +1,25 @@
+loss_c=0.000000, valid_f1=0.560
+loss_c=0.000000, valid_f1=0.589
+loss_c=0.000000, valid_f1=0.727
+loss_c=0.000000, valid_f1=0.849
+loss_c=0.000000, valid_f1=0.864
+loss_c=0.000000, valid_f1=0.862
+test_accuracy=0.868, test_f1=0.868
+loss_c=0.000000, valid_f1=0.360
+loss_c=0.000000, valid_f1=0.420
+loss_c=0.000000, valid_f1=0.756
+loss_c=0.000000, valid_f1=0.844
+loss_c=0.000000, valid_f1=0.860
+loss_c=0.000000, valid_f1=0.866
+test_accuracy=0.869, test_f1=0.869
+loss_c=0.000000, valid_f1=0.302
+loss_c=0.000000, valid_f1=0.479
+loss_c=0.000000, valid_f1=0.742
+loss_c=0.000000, valid_f1=0.839
+loss_c=0.000000, valid_f1=0.866
+loss_c=0.000000, valid_f1=0.868
+test_accuracy=0.872, test_f1=0.872
+Test Acc: 86.95 ± 0.22
+Test f1: 86.97 ± 0.21
+Valid Acc: 86.52 ± 0.30
+Valid f1: 86.53 ± 0.31

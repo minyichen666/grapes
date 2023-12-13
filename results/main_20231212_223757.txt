@@ -1,0 +1,101 @@
+loss_gfn=9140427.807121, loss_c=1.458851, valid_accuracy=0.812, valid_f1=0.790
+loss_gfn=499027.571687, loss_c=0.720854, valid_accuracy=0.825, valid_f1=0.816
+loss_gfn=422597.477823, loss_c=0.511348, valid_accuracy=0.880, valid_f1=0.878
+loss_gfn=335241.157474, loss_c=0.417998, valid_accuracy=0.862, valid_f1=0.858
+loss_gfn=280156.107699, loss_c=0.361743, valid_accuracy=0.873, valid_f1=0.872
+loss_gfn=333175.574545, loss_c=0.319358, valid_accuracy=0.879, valid_f1=0.872
+loss_gfn=210791.490081, loss_c=0.284518, valid_accuracy=0.849, valid_f1=0.836
+loss_gfn=203191.015897, loss_c=0.257303, valid_accuracy=0.871, valid_f1=0.865
+loss_gfn=223669.721742, loss_c=0.245788, valid_accuracy=0.895, valid_f1=0.893
+loss_gfn=208482.594678, loss_c=0.241147, valid_accuracy=0.855, valid_f1=0.842
+loss_gfn=222989.594094, loss_c=0.219231, valid_accuracy=0.816, valid_f1=0.797
+loss_gfn=222243.592144, loss_c=0.196219, valid_accuracy=0.829, valid_f1=0.816
+loss_gfn=144850.796381, loss_c=0.174031, valid_accuracy=0.888, valid_f1=0.875
+loss_gfn=107748.449763, loss_c=0.160198, valid_accuracy=0.884, valid_f1=0.870
+loss_gfn=83774.458593, loss_c=0.145061, valid_accuracy=0.895, valid_f1=0.893
+loss_gfn=103197.282757, loss_c=0.134088, valid_accuracy=0.855, valid_f1=0.849
+loss_gfn=106887.173771, loss_c=0.121269, valid_accuracy=0.880, valid_f1=0.877
+loss_gfn=85293.055041, loss_c=0.101539, valid_accuracy=0.895, valid_f1=0.894
+loss_gfn=70333.417075, loss_c=0.089068, valid_accuracy=0.881, valid_f1=0.879
+loss_gfn=59508.998704, loss_c=0.080741, valid_accuracy=0.881, valid_f1=0.879
+loss_gfn=58494.069903, loss_c=0.076110, valid_accuracy=0.876, valid_f1=0.875
+loss_gfn=49605.895072, loss_c=0.071674, valid_accuracy=0.887, valid_f1=0.885
+loss_gfn=70033.670871, loss_c=0.080850, valid_accuracy=0.896, valid_f1=0.896
+loss_gfn=109053.347107, loss_c=0.076554, valid_accuracy=0.879, valid_f1=0.879
+loss_gfn=89387.801253, loss_c=0.078152, valid_accuracy=0.869, valid_f1=0.868
+loss_gfn=337681.956502, loss_c=0.095773, valid_accuracy=0.874, valid_f1=0.864
+loss_gfn=92747.661473, loss_c=0.075006, valid_accuracy=0.894, valid_f1=0.890
+loss_gfn=84706.126259, loss_c=0.059207, valid_accuracy=0.897, valid_f1=0.896
+loss_gfn=48886.773998, loss_c=0.047962, valid_accuracy=0.889, valid_f1=0.888
+loss_gfn=54622.418351, loss_c=0.045377, valid_accuracy=0.892, valid_f1=0.893
+test_accuracy=0.872, test_f1=0.873
+loss_gfn=9140430.925339, loss_c=1.458851, valid_accuracy=0.812, valid_f1=0.790
+loss_gfn=499027.705414, loss_c=0.720854, valid_accuracy=0.825, valid_f1=0.816
+loss_gfn=422597.438954, loss_c=0.511348, valid_accuracy=0.880, valid_f1=0.878
+loss_gfn=335241.218751, loss_c=0.417998, valid_accuracy=0.862, valid_f1=0.858
+loss_gfn=280156.103243, loss_c=0.361743, valid_accuracy=0.873, valid_f1=0.872
+loss_gfn=333175.668468, loss_c=0.319358, valid_accuracy=0.879, valid_f1=0.872
+loss_gfn=210791.531943, loss_c=0.284518, valid_accuracy=0.849, valid_f1=0.836
+loss_gfn=203191.046600, loss_c=0.257303, valid_accuracy=0.871, valid_f1=0.865
+loss_gfn=223669.719093, loss_c=0.245788, valid_accuracy=0.895, valid_f1=0.893
+loss_gfn=208482.479241, loss_c=0.241147, valid_accuracy=0.855, valid_f1=0.842
+loss_gfn=222989.580030, loss_c=0.219231, valid_accuracy=0.816, valid_f1=0.797
+loss_gfn=222243.539078, loss_c=0.196219, valid_accuracy=0.829, valid_f1=0.816
+loss_gfn=144850.791214, loss_c=0.174031, valid_accuracy=0.888, valid_f1=0.875
+loss_gfn=107748.419157, loss_c=0.160198, valid_accuracy=0.884, valid_f1=0.870
+loss_gfn=83774.466858, loss_c=0.145061, valid_accuracy=0.895, valid_f1=0.893
+loss_gfn=103197.221030, loss_c=0.134088, valid_accuracy=0.855, valid_f1=0.849
+loss_gfn=106887.022652, loss_c=0.121268, valid_accuracy=0.880, valid_f1=0.877
+loss_gfn=85292.983379, loss_c=0.101539, valid_accuracy=0.895, valid_f1=0.894
+loss_gfn=70333.475539, loss_c=0.089068, valid_accuracy=0.881, valid_f1=0.879
+loss_gfn=59509.106328, loss_c=0.080741, valid_accuracy=0.881, valid_f1=0.879
+loss_gfn=58494.116834, loss_c=0.076110, valid_accuracy=0.876, valid_f1=0.875
+loss_gfn=49605.834638, loss_c=0.071674, valid_accuracy=0.887, valid_f1=0.885
+loss_gfn=70031.605541, loss_c=0.080850, valid_accuracy=0.896, valid_f1=0.896
+loss_gfn=109009.806326, loss_c=0.076552, valid_accuracy=0.879, valid_f1=0.879
+loss_gfn=88792.508470, loss_c=0.077887, valid_accuracy=0.865, valid_f1=0.863
+loss_gfn=338523.177545, loss_c=0.099480, valid_accuracy=0.879, valid_f1=0.868
+loss_gfn=94920.977573, loss_c=0.076791, valid_accuracy=0.897, valid_f1=0.893
+loss_gfn=90254.591280, loss_c=0.057416, valid_accuracy=0.897, valid_f1=0.897
+loss_gfn=47838.046541, loss_c=0.047704, valid_accuracy=0.885, valid_f1=0.884
+loss_gfn=45461.268079, loss_c=0.045048, valid_accuracy=0.897, valid_f1=0.898
+test_accuracy=0.868, test_f1=0.869
+loss_gfn=9140426.501667, loss_c=1.458851, valid_accuracy=0.812, valid_f1=0.790
+loss_gfn=499027.706532, loss_c=0.720854, valid_accuracy=0.825, valid_f1=0.816
+loss_gfn=422597.438516, loss_c=0.511348, valid_accuracy=0.880, valid_f1=0.878
+loss_gfn=335241.157508, loss_c=0.417998, valid_accuracy=0.862, valid_f1=0.858
+loss_gfn=280156.118640, loss_c=0.361743, valid_accuracy=0.873, valid_f1=0.872
+loss_gfn=333175.532868, loss_c=0.319358, valid_accuracy=0.879, valid_f1=0.872
+loss_gfn=210791.504550, loss_c=0.284518, valid_accuracy=0.849, valid_f1=0.836
+loss_gfn=203191.033148, loss_c=0.257303, valid_accuracy=0.871, valid_f1=0.865
+loss_gfn=223669.755746, loss_c=0.245788, valid_accuracy=0.895, valid_f1=0.893
+loss_gfn=208482.524716, loss_c=0.241147, valid_accuracy=0.855, valid_f1=0.842
+loss_gfn=222989.555964, loss_c=0.219231, valid_accuracy=0.816, valid_f1=0.797
+loss_gfn=222243.635870, loss_c=0.196219, valid_accuracy=0.829, valid_f1=0.816
+loss_gfn=144850.796034, loss_c=0.174031, valid_accuracy=0.888, valid_f1=0.875
+loss_gfn=107748.420150, loss_c=0.160198, valid_accuracy=0.884, valid_f1=0.870
+loss_gfn=83774.473938, loss_c=0.145061, valid_accuracy=0.895, valid_f1=0.893
+loss_gfn=103197.254283, loss_c=0.134088, valid_accuracy=0.855, valid_f1=0.849
+loss_gfn=106887.070918, loss_c=0.121268, valid_accuracy=0.880, valid_f1=0.877
+loss_gfn=85292.994824, loss_c=0.101539, valid_accuracy=0.895, valid_f1=0.894
+loss_gfn=70333.427314, loss_c=0.089068, valid_accuracy=0.881, valid_f1=0.879
+loss_gfn=59508.149656, loss_c=0.080741, valid_accuracy=0.881, valid_f1=0.879
+loss_gfn=58492.705683, loss_c=0.076111, valid_accuracy=0.876, valid_f1=0.875
+loss_gfn=49604.436366, loss_c=0.071673, valid_accuracy=0.887, valid_f1=0.885
+loss_gfn=70183.015743, loss_c=0.080833, valid_accuracy=0.895, valid_f1=0.895
+loss_gfn=102953.840404, loss_c=0.075953, valid_accuracy=0.881, valid_f1=0.881
+loss_gfn=92740.556523, loss_c=0.078197, valid_accuracy=0.869, valid_f1=0.866
+loss_gfn=442291.134194, loss_c=0.113026, valid_accuracy=0.880, valid_f1=0.872
+loss_gfn=121507.419587, loss_c=0.081974, valid_accuracy=0.885, valid_f1=0.880
+loss_gfn=114872.438743, loss_c=0.064554, valid_accuracy=0.889, valid_f1=0.889
+loss_gfn=60597.829871, loss_c=0.053076, valid_accuracy=0.895, valid_f1=0.895
+loss_gfn=47426.833152, loss_c=0.047927, valid_accuracy=0.904, valid_f1=0.903
+test_accuracy=0.873, test_f1=0.872
+Memory point 1: 88.28493406310562 MB ± 6.57
+Memory point 2: 55.20227284197352 MB ± 3.31
+Memory point 2: 55.203757368378554 MB ± 3.31
+Acc: 0.87 ± 0.23
+Loss Coefficient: 9994.70 ± 0.52
+Test f1: 0.87 ± 0.00
+Valid acc: 0.90 ± 0.01
+valid f1: 0.90 ± 0.01

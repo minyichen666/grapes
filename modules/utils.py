@@ -12,7 +12,8 @@ from torch.distributions import Bernoulli, Gumbel
 
 def sample_neighborhoods_from_probs(logits: torch.Tensor,
                                     neighbor_nodes: torch.Tensor,
-                                    num_samples: int = -1
+                                    num_samples: int = -1,
+                                    threshold_value: float = 0
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
     """Remove edges from an edge index, by removing nodes according to some
     probability.
@@ -41,8 +42,14 @@ def sample_neighborhoods_from_probs(logits: torch.Tensor,
     gumbel = Gumbel(torch.tensor(0., device=logits.device), torch.tensor(1., device=logits.device))
     gumbel_noise = gumbel.sample((n,))
     perturbed_log_probs = b.probs.log() + gumbel_noise
-
-    samples = torch.topk(perturbed_log_probs, k=k, dim=0, sorted=False)[1]
+    if threshold_value == 0.:
+        samples = torch.topk(perturbed_log_probs, k=k, dim=0, sorted=False)[1]
+    else:
+        threshold = torch.log(torch.tensor(threshold_value))  # Convert the threshold value to log probability if needed
+        mask = perturbed_log_probs > threshold
+        valid_samples = mask.nonzero(as_tuple=False).squeeze()
+        num_valid_samples = min(valid_samples.size(0), k)
+        samples = torch.topk(perturbed_log_probs[valid_samples], k=num_valid_samples, dim=0, sorted=False)[1]
 
     # calculate the entropy in bits
     entropy = torch.tensor(-(b.probs * (b.probs).log2() + (1 - b.probs) * (1 - b.probs).log2()))
@@ -67,6 +74,63 @@ def sample_neighborhoods_from_probs(logits: torch.Tensor,
 
     return neighbor_nodes, b.log_prob(mask), stats_dict
 
+
+# def sample_neighborhoods_from_probs(logits: torch.Tensor,
+#                                     neighbor_nodes: torch.Tensor,
+#                                     num_samples: int = -1
+#     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+#     """Remove edges from an edge index, by removing nodes according to some
+#     probability.
+
+#     Uses Gumbel-max trick to sample from Bernoulli distribution. This is off-policy, since the original input
+#     distribution is a regular Bernoulli distribution.
+#     Args:
+#         logits: tensor of shape (N,), where N all the number of unique
+#             nodes in a batch, containing the probability of dropping the node.
+#         neighbor_nodes: tensor containing global node identifiers of the neighbors nodes
+#         num_samples: the number of samples to keep. If None, all edges are kept.
+#     """
+
+#     k = num_samples
+#     n = neighbor_nodes.shape[0]
+#     if k >= n:
+#         # TODO: Test this setting
+#         return neighbor_nodes, torch.sigmoid(
+#             logits.squeeze(-1)).log(), {}
+#     assert k < n
+#     assert k > 0
+
+#     b = Bernoulli(logits=logits.squeeze())
+
+#     # Gumbel-sort trick https://timvieira.github.io/blog/post/2014/08/01/gumbel-max-trick-and-weighted-reservoir-sampling/
+#     gumbel = Gumbel(torch.tensor(0., device=logits.device), torch.tensor(1., device=logits.device))
+#     gumbel_noise = gumbel.sample((n,))
+#     perturbed_log_probs = b.probs.log() + gumbel_noise
+
+#     samples = torch.topk(perturbed_log_probs, k=k, dim=0, sorted=False)[1]
+
+#     # calculate the entropy in bits
+#     entropy = torch.tensor(-(b.probs * (b.probs).log2() + (1 - b.probs) * (1 - b.probs).log2()))
+
+#     min_prob = b.probs.min(-1)[0]
+#     max_prob = b.probs.max(-1)[0]
+
+#     if torch.isnan(entropy).any():
+#         nan_ind = torch.isnan(entropy)
+#         entropy[nan_ind] = 0.0
+
+#     std_entropy, mean_entropy = torch.std_mean(entropy)
+#     mask = torch.zeros_like(logits.squeeze(), dtype=torch.float)
+#     mask[samples] = 1
+
+#     neighbor_nodes = neighbor_nodes[mask.bool().cpu()]
+
+#     stats_dict = {"min_prob": min_prob,
+#                   "max_prob": max_prob,
+#                   "mean_entropy": mean_entropy,
+#                   "std_entropy": std_entropy}
+
+#     return neighbor_nodes, b.log_prob(mask), stats_dict
 
 def get_neighborhoods(nodes: Tensor,
                       adjacency: sp.csr_matrix
@@ -148,26 +212,48 @@ def index2mask(idx: Tensor, size: int) -> Tensor:
     mask[idx] = True
     return mask
 
-
-def gen_masks(y: Tensor, train_per_class: int = 20, val_per_class: int = 30,
-              num_splits: int = 20) -> Tuple[Tensor, Tensor, Tensor]:
+def gen_masks(y: Tensor, train_prop: float = 0.8, val_prop: float = 0.1) -> Tuple[Tensor, Tensor, Tensor]:
+    num_samples = y.size(0)
     num_classes = int(y.max()) + 1
 
-    train_mask = torch.zeros(y.size(0), num_splits, dtype=torch.bool)
-    val_mask = torch.zeros(y.size(0), num_splits, dtype=torch.bool)
+    # Calculate the number of samples for each set
+    num_train = int(train_prop * num_samples)
+    num_val = int(val_prop * num_samples)
 
-    for c in range(num_classes):
-        idx = (y == c).nonzero(as_tuple=False).view(-1)
-        perm = torch.stack(
-            [torch.randperm(idx.size(0)) for _ in range(num_splits)], dim=1)
-        idx = idx[perm]
+    # Shuffle the indices
+    shuffled_indices = torch.randperm(num_samples)
 
-        train_idx = idx[:train_per_class]
-        train_mask.scatter_(0, train_idx, True)
-        val_idx = idx[train_per_class:train_per_class + val_per_class]
-        val_mask.scatter_(0, val_idx, True)
+    # Assign indices to each set
+    train_mask = torch.zeros(num_samples, dtype=torch.bool)
+    val_mask = torch.zeros(num_samples, dtype=torch.bool)
 
+    train_mask[shuffled_indices[:num_train]] = True
+    val_mask[shuffled_indices[num_train:num_train + num_val]] = True
+
+    # The rest goes to the test set
     test_mask = ~(train_mask | val_mask)
+
+    return train_mask, val_mask, test_mask
+
+# def gen_masks(y: Tensor, train_per_class: int = 20, val_per_class: int = 30,
+#               num_splits: int = 20) -> Tuple[Tensor, Tensor, Tensor]:
+#     num_classes = int(y.max()) + 1
+
+#     train_mask = torch.zeros(y.size(0), num_splits, dtype=torch.bool)
+#     val_mask = torch.zeros(y.size(0), num_splits, dtype=torch.bool)
+
+#     for c in range(num_classes):
+#         idx = (y == c).nonzero(as_tuple=False).view(-1)
+#         perm = torch.stack(
+#             [torch.randperm(idx.size(0)) for _ in range(num_splits)], dim=1)
+#         idx = idx[perm]
+
+#         train_idx = idx[:train_per_class]
+#         train_mask.scatter_(0, train_idx, True)
+#         val_idx = idx[train_per_class:train_per_class + val_per_class]
+#         val_mask.scatter_(0, val_idx, True)
+
+#     test_mask = ~(train_mask | val_mask)
 
     return train_mask, val_mask, test_mask
 

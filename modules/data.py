@@ -33,16 +33,17 @@ def get_coauthor(root: str, name: str) -> Tuple[Data, int, int]:
     data = dataset[0]
     torch.manual_seed(12345)
     data.train_mask, data.val_mask, data.test_mask = gen_masks(
-        data.y, 20, 30, 20)
+        data.y, 0.8, 0.1)
     return data, dataset.num_features, dataset.num_classes
 
 
 def get_amazon(root: str, name: str) -> Tuple[Data, int, int]:
-    dataset = Amazon(f'{root}/Amazon', name, transform=T.ToSparseTensor())
+    # dataset = Amazon(f'{root}/Amazon', name, transform=T.ToSparseTensor())
+    dataset = Amazon(root='data/Amazon', name='Computers')
+    # Get the first graph object from the dataset
     data = dataset[0]
     torch.manual_seed(12345)
-    data.train_mask, data.val_mask, data.test_mask = gen_masks(
-        data.y, 20, 30, 20)
+    data.train_mask, data.val_mask, data.test_mask = gen_masks(data.y, 0.8, 0.1)
     return data, dataset.num_features, dataset.num_classes
 
 

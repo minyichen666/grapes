@@ -1,0 +1,29 @@
+loss_gfn=333490.995364, loss_c=0.418122, valid_accuracy=0.861, valid_f1=0.858
+loss_gfn=208720.427906, loss_c=0.248874, valid_accuracy=0.894, valid_f1=0.891
+loss_gfn=116012.375650, loss_c=0.161175, valid_accuracy=0.861, valid_f1=0.846
+loss_gfn=70957.594117, loss_c=0.092335, valid_accuracy=0.873, valid_f1=0.862
+loss_gfn=105068.102615, loss_c=0.071163, valid_accuracy=0.875, valid_f1=0.872
+loss_gfn=116321.262465, loss_c=0.065234, valid_accuracy=0.887, valid_f1=0.883
+test_accuracy=0.868, test_f1=0.869
+loss_gfn=333490.591704, loss_c=0.418122, valid_accuracy=0.861, valid_f1=0.858
+loss_gfn=208720.355749, loss_c=0.248874, valid_accuracy=0.894, valid_f1=0.891
+loss_gfn=114153.934289, loss_c=0.159380, valid_accuracy=0.859, valid_f1=0.844
+loss_gfn=65633.006454, loss_c=0.090598, valid_accuracy=0.873, valid_f1=0.863
+loss_gfn=70602.733341, loss_c=0.069202, valid_accuracy=0.881, valid_f1=0.876
+loss_gfn=86330.898051, loss_c=0.064022, valid_accuracy=0.889, valid_f1=0.889
+test_accuracy=0.863, test_f1=0.863
+loss_gfn=333490.868420, loss_c=0.418122, valid_accuracy=0.861, valid_f1=0.858
+loss_gfn=208720.364404, loss_c=0.248874, valid_accuracy=0.894, valid_f1=0.891
+loss_gfn=116012.349806, loss_c=0.161175, valid_accuracy=0.861, valid_f1=0.846
+loss_gfn=66026.131251, loss_c=0.091148, valid_accuracy=0.871, valid_f1=0.861
+loss_gfn=54539.375158, loss_c=0.068575, valid_accuracy=0.902, valid_f1=0.900
+loss_gfn=124188.498804, loss_c=0.069341, valid_accuracy=0.884, valid_f1=0.879
+test_accuracy=0.860, test_f1=0.862
+Memory point 1: 88.30425422924742 MB ± 6.58
+Memory point 2: 55.22122105640342 MB ± 3.31
+Memory point 2: 55.222705582808466 MB ± 3.31
+Acc: 86.41 ± 0.40
+Loss Coefficient: 9994.94 ± 0.11
+Test f1: 0.86 ± 0.00
+Valid acc: 88.65 ± 0.29
+valid f1: 0.88 ± 0.00
